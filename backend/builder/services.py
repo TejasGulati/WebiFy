@@ -1,3 +1,4 @@
+import os
 from typing import Dict, Any, Optional, List, Union
 import json
 import re
@@ -14,6 +15,7 @@ from bs4 import BeautifulSoup
 import html.parser
 import cssbeautifier
 import jsbeautifier
+from dotenv import load_dotenv
 
 # Enhanced logging configuration
 logging.basicConfig(
@@ -87,6 +89,7 @@ class WebsiteGenerator:
     
     def __init__(self, model: str = DEFAULT_MODEL):
         """Initialize the generator with enhanced configuration."""
+        load_dotenv() 
         self.current_state = GenerationState()
         self.current_year = datetime.now().year
         self.model = None
@@ -97,28 +100,25 @@ class WebsiteGenerator:
     def _initialize_api(self, model: str) -> None:
         """Initialize the API with enhanced error handling and fallback mechanism."""
         api_keys = [
-            getattr(settings, f'GEMINI_API_KEY{i}', None) 
+            os.getenv(f'GEMINI_API_KEY{i}') 
             for i in range(1, 4)
         ]
         api_keys = [key for key in api_keys if key]
-        
-        if not api_keys and hasattr(settings, 'GEMINI_API_KEY'):
-            api_keys = [settings.GEMINI_API_KEY]
-            
+
         if not api_keys:
-            raise ValueError("No API keys configured. Please set GEMINI_API_KEY in settings.")
-        
+            raise ValueError("No API keys configured. Please set GEMINI_API_KEY1, GEMINI_API_KEY2, etc. in .env.")
+
         for api_key in api_keys:
             try:
                 genai.configure(api_key=api_key)
                 self.model = genai.GenerativeModel(model)
-                logger.info("Successfully initialized Gemini API")
+                logger.info(f"Successfully initialized Gemini API with key ending in {api_key[-4:]}")
                 return
             except Exception as e:
-                logger.warning(f"Failed to initialize with API key: {str(e)}")
+                logger.warning(f"Failed to initialize with API key ending in {api_key[-4:]}: {str(e)}")
                 continue
-                
-        raise ValueError("Failed to initialize with all available API keys")
+
+        raise ValueError("Failed to initialize with all available API keys.")
         
     def _initialize_prompts(self):
         """Initialize enhanced prompts with comprehensive guidance."""
