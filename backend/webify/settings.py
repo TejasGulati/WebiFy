@@ -135,8 +135,11 @@ REST_FRAMEWORK = {
 
 import os
 from decouple import config
+# settings.py
+GEMINI_API_KEY1 = 'AIzaSyDlSBAnNJmQc1YzCqR0KPasz0gtCOKES78'
+GEMINI_API_KEY2 = 'AIzaSyDEGutqp354RM2ztSN-BtHqffxQ3PlbRrc'
+GEMINI_API_KEY3 = 'AIzaSyDquCH7d8GH-zmAY2L1fHZ8AiH3c-zRKhA'
 
-GEMINI_API_KEY = config('GEMINI_API_KEY')
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Vite default port
 ]
