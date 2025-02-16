@@ -1,17 +1,27 @@
-import { useState } from 'react';
-import PromptInput from './components/PromptInput';
-import PreviewPanel from './components/PreviewPanel';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useState } from "react";
+import HomePage from "./pages/HomePage";
+import PromptPage from "./pages/PromptPage";
+import PreviewPage from "./pages/PreviewPage";
 
 function App() {
-    const [generatedCode, setGeneratedCode] = useState('');
+  const [generatedCode, setGeneratedCode] = useState(null);
 
-    return (
-        <div className="app">
-            <h1>Webify - AI Website Builder</h1>
-            <PromptInput onGenerate={setGeneratedCode} />
-            <PreviewPanel code={generatedCode} />
-        </div>
-    );
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route 
+          path="/prompt" 
+          element={<PromptPage setGeneratedCode={setGeneratedCode} />} 
+        />
+        <Route 
+          path="/preview" 
+          element={<PreviewPage generatedCode={generatedCode} />} 
+        />
+      </Routes>
+    </Router>
+  );
 }
 
 export default App;

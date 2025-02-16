@@ -9,18 +9,14 @@ const PreviewPanel = ({ code, loading, error }) => {
   const updateImagePaths = (htmlContent) => {
     if (!htmlContent) return htmlContent;
     
-    // Replace image paths with absolute URLs
-    // Match any img tag with src containing "images/"
-    const BACKEND_URL = 'http://localhost:8000/'; // Make sure this matches your Django development server
+    const BACKEND_URL = 'http://localhost:8000/';
     const updatedHTML = htmlContent.replace(
       /<img([^>]*)src=["'](?:\/?images\/[^"']*)["']([^>]*)>/g,
       (match, before, after) => {
-        // Extract the original src
         const srcMatch = match.match(/src=["']([^"']*)["']/);
         if (srcMatch) {
           const originalSrc = srcMatch[1];
-          // Clean up the path and create absolute URL
-          const cleanPath = originalSrc.replace(/^\/+/, ''); // Remove leading slashes
+          const cleanPath = originalSrc.replace(/^\/+/, '');
           return `<img${before}src="${BACKEND_URL}${cleanPath}"${after}>`;
         }
         return match;
@@ -30,7 +26,6 @@ const PreviewPanel = ({ code, loading, error }) => {
     return updatedHTML;
   };
 
-  // Combine HTML, CSS, and JS into a single document
   const generatePreviewCode = (code) => {
     if (!code?.html && !code?.css && !code?.js) return null;
 
@@ -52,15 +47,14 @@ const PreviewPanel = ({ code, loading, error }) => {
     `;
   };
 
-  // Force iframe refresh when code changes
   useEffect(() => {
     setPreviewKey(prev => prev + 1);
   }, [code]);
 
   if (error) {
     return (
-      <div className="mb-4 p-4 border border-red-500 bg-red-100 rounded-lg flex items-center">
-        <AlertCircle className="h-4 w-4 text-red-500 mr-2" />
+      <div className="error-container">
+        <AlertCircle className="icon" />
         <span>{error}</span>
       </div>
     );
@@ -68,10 +62,10 @@ const PreviewPanel = ({ code, loading, error }) => {
 
   if (loading) {
     return (
-      <div className="w-full h-96 flex items-center justify-center bg-gray-50 rounded-lg border">
-        <div className="text-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-500" />
-          <p className="text-gray-600">Generating your website preview...</p>
+      <div className="loading-container">
+        <div className="loading-content">
+          <Loader2 className="icon spinning" />
+          <p>Generating your website preview...</p>
         </div>
       </div>
     );
@@ -81,14 +75,14 @@ const PreviewPanel = ({ code, loading, error }) => {
 
   if (!previewCode) {
     return (
-      <div className="w-full h-96 flex items-center justify-center bg-gray-50 rounded-lg border">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto">
-            <Code className="h-8 w-8 text-blue-500" />
+      <div className="empty-container">
+        <div className="empty-content">
+          <div className="icon-container">
+            <Code className="icon" />
           </div>
-          <div>
-            <p className="text-lg font-medium">Preview Panel</p>
-            <p className="text-gray-600">Your generated website will appear here</p>
+          <div className="empty-text">
+            <p className="empty-title">Preview Panel</p>
+            <p className="empty-description">Your generated website will appear here</p>
           </div>
         </div>
       </div>
@@ -96,22 +90,22 @@ const PreviewPanel = ({ code, loading, error }) => {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">Website Preview</h2>
-        <div className="space-x-2">
+    <div className="preview-container">
+      <div className="preview-header">
+        <h2 className="preview-title">Website Preview</h2>
+        <div className="preview-actions">
           <button
             onClick={() => setShowCode(!showCode)}
-            className="inline-flex items-center px-3 py-1.5 border rounded-md hover:bg-gray-50"
+            className="action-button"
           >
-            <Code className="h-4 w-4 mr-2" />
+            <Code className="icon" />
             {showCode ? 'Hide Code' : 'Show Code'}
           </button>
           <button
             onClick={() => setPreviewKey(prev => prev + 1)}
-            className="inline-flex items-center px-3 py-1.5 border rounded-md hover:bg-gray-50"
+            className="action-button"
           >
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <RefreshCw className="icon" />
             Refresh
           </button>
           <button
@@ -120,26 +114,26 @@ const PreviewPanel = ({ code, loading, error }) => {
               newWindow.document.write(previewCode);
               newWindow.document.close();
             }}
-            className="inline-flex items-center px-3 py-1.5 border rounded-md hover:bg-gray-50"
+            className="action-button"
           >
-            <Maximize2 className="h-4 w-4 mr-2" />
+            <Maximize2 className="icon" />
             Open in New Tab
           </button>
         </div>
       </div>
 
       {showCode && (
-        <pre className="p-4 bg-gray-50 rounded-lg overflow-auto max-h-96">
+        <pre className="code-preview">
           <code>{previewCode}</code>
         </pre>
       )}
 
-      <div className="border rounded-lg overflow-hidden bg-white">
+      <div className="iframe-container">
         <iframe
           key={previewKey}
           srcDoc={previewCode}
           title="Website Preview"
-          className="w-full h-[600px] border-0"
+          className="preview-iframe"
           sandbox="allow-scripts allow-same-origin"
         />
       </div>

@@ -35,7 +35,7 @@ const PromptInput = ({ onGenerate }) => {
     }
   };
 
-  // Sequential generation steps
+  // Sequential generation steps remain unchanged
   const generateStep = async (currentPrompt) => {
     const response = await fetch(API_ENDPOINTS.process, {
       method: 'POST',
@@ -63,7 +63,6 @@ const PromptInput = ({ onGenerate }) => {
       return;
     }
 
-    // Reset all states at the start
     setLoading(true);
     setError('');
     setProgress(0);
@@ -75,11 +74,8 @@ const PromptInput = ({ onGenerate }) => {
 
     try {
       addDebugLog('Starting new generation');
-
-      // Reset any existing generation
       await fetch(API_ENDPOINTS.reset, { method: 'POST' });
 
-      // Structure Analysis (25%)
       addDebugLog('Starting structure analysis');
       setProgress(25);
       const structureResult = await generateStep(prompt);
@@ -87,7 +83,6 @@ const PromptInput = ({ onGenerate }) => {
         throw new Error(structureResult.errors[0]);
       }
 
-      // HTML Generation (50%)
       addDebugLog('Starting HTML generation');
       setProgress(50);
       const htmlResult = await generateStep(prompt);
@@ -95,7 +90,6 @@ const PromptInput = ({ onGenerate }) => {
         throw new Error(htmlResult.errors[0]);
       }
 
-      // CSS Generation (75%)
       addDebugLog('Starting CSS generation');
       setProgress(75);
       const cssResult = await generateStep(prompt);
@@ -103,7 +97,6 @@ const PromptInput = ({ onGenerate }) => {
         throw new Error(cssResult.errors[0]);
       }
 
-      // JS Generation (100%)
       addDebugLog('Starting JS generation');
       setProgress(100);
       const jsResult = await generateStep(prompt);
@@ -111,12 +104,10 @@ const PromptInput = ({ onGenerate }) => {
         throw new Error(jsResult.errors[0]);
       }
 
-      // Calculate total generation time
       const endTime = Date.now();
-      const totalTime = (endTime - startTime) / 1000; // Convert to seconds
+      const totalTime = (endTime - startTime) / 1000;
       setGenerationTime(totalTime);
 
-      // Combine all warnings
       const allWarnings = [
         ...(structureResult.warnings || []),
         ...(htmlResult.warnings || []),
@@ -125,7 +116,6 @@ const PromptInput = ({ onGenerate }) => {
       ];
       setWarnings(allWarnings);
 
-      // Call onGenerate with final result
       onGenerate(jsResult);
       addDebugLog('Generation completed successfully');
 
@@ -152,31 +142,31 @@ const PromptInput = ({ onGenerate }) => {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-4">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Website Builder</h1>
-        <p className="text-gray-600">
+    <div className="input-container">
+      <div className="input-header">
+        <h1 className="title">Website Builder</h1>
+        <p className="subtitle">
           Describe your website and we'll generate it using AI
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
+      <form onSubmit={handleSubmit} className="input-form">
+        <div className="textarea-container">
           <textarea
             value={prompt}
             onChange={handlePromptChange}
             placeholder="Describe your website in detail..."
-            className="w-full h-32 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="prompt-textarea"
             disabled={loading}
           />
 
-          <div className="flex justify-between text-sm">
-            <span className={characterCount >= MAX_CHARS ? 'text-red-500' : 'text-gray-500'}>
+          <div className="character-count">
+            <span className={characterCount >= MAX_CHARS ? 'error' : ''}>
               {characterCount}/{MAX_CHARS} characters
             </span>
             {prompt.length < MIN_CHARS && prompt.length > 0 && (
-              <span className="text-red-500 flex items-center">
-                <AlertCircle className="w-4 h-4 mr-1" />
+              <span className="min-chars-warning">
+                <AlertCircle className="icon" />
                 Minimum {MIN_CHARS} characters required
               </span>
             )}
@@ -184,16 +174,16 @@ const PromptInput = ({ onGenerate }) => {
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start space-x-2">
-            <AlertCircle className="w-5 h-5 text-red-500 mt-0.5" />
-            <p className="text-red-800">{error}</p>
+          <div className="error-message">
+            <AlertCircle className="icon" />
+            <p>{error}</p>
           </div>
         )}
 
         {warnings.length > 0 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start space-x-2">
-            <AlertCircle className="w-5 h-5 text-yellow-500 mt-0.5" />
-            <div className="text-yellow-800">
+          <div className="warning-message">
+            <AlertCircle className="icon" />
+            <div className="warning-content">
               {warnings.map((warning, index) => (
                 <div key={index}>{warning}</div>
               ))}
@@ -202,25 +192,25 @@ const PromptInput = ({ onGenerate }) => {
         )}
 
         {loading && progress > 0 && (
-          <div className="space-y-2">
-            <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="progress-container">
+            <div className="progress-bar-container">
               <div
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                className="progress-bar"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <div className="flex items-center justify-between text-sm text-gray-600">
-              <span className="flex items-center">
-                <Clock className="w-4 h-4 mr-1" />
+            <div className="progress-status">
+              <span className="status-message">
+                <Clock className="icon" />
                 {getStatusMessage()}
               </span>
-              <span>{progress}%</span>
+              <span className="progress-percentage">{progress}%</span>
             </div>
           </div>
         )}
 
         {generationTime && !loading && (
-          <div className="text-sm text-gray-600">
+          <div className="generation-time">
             Generation completed in {generationTime.toFixed(2)} seconds
           </div>
         )}
@@ -228,16 +218,11 @@ const PromptInput = ({ onGenerate }) => {
         <button
           type="submit"
           disabled={loading || prompt.length < MIN_CHARS}
-          className={`w-full flex items-center justify-center py-3 px-4 rounded-lg text-white font-medium
-            ${loading || prompt.length < MIN_CHARS
-              ? 'bg-blue-300 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-500/50'
-            }
-          `}
+          className={`submit-button ${loading || prompt.length < MIN_CHARS ? 'disabled' : ''}`}
         >
           {loading ? (
             <>
-              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              <Loader2 className="icon spinning" />
               Generating your website...
             </>
           ) : (
